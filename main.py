@@ -1,178 +1,82 @@
 import asyncio
 import logging
+from datetime import datetime
 
 from maxapi import Bot, Dispatcher
-from maxapi.types import (
-    BotStarted,
-    Command,
-    MessageCreated,
-    CallbackButton,
-    MessageCallback,
-    BotAdded,
-    ChatTitleChanged,
-    MessageEdited,
-    MessageRemoved,
-    UserAdded,
-    UserRemoved,
-    BotStopped,
-    DialogCleared,
-    DialogMuted,
-    DialogUnmuted,
-    ChatButton,
-    MessageChatCreated
-)
+from maxapi.types import MessageCreated, Command, MessageCallback, CallbackButton
 from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
+from maxapi.filters import F
 
 logging.basicConfig(level=logging.INFO)
 
 bot = Bot('f9LHodD0cOIldjpxJWwsW9WZj9R7gYvK7Tt5042DZ7JBxEDrCmGmdzu4CaYjwR4pfyCfeMGT-K4R_eVr4WIK')
 dp = Dispatcher()
 
+# Временное хранилище (позже заменим на БД)
+user_notes = {}
+
+
+# === KEYBOARDS ===
+def create_main_menu():
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        CallbackButton(text="➕ Новая заметка", payload="new_note"),
+        CallbackButton(text="📝 Мои заметки", payload="list_notes")
+    )
+    builder.row(
+        CallbackButton(text="✅ Выполненные", payload="completed_notes"),
+        CallbackButton(text="⚙️ Настройки", payload="settings")
+    )
+    return builder.as_markup()
+
+
+# === HANDLERS ===
+@dp.bot_started()
+async def on_bot_started(event):
+    """Приветствие при первом запуске бота"""
+    await bot.send_message(
+        chat_id=event.chat_id,
+        text="📝 Добро пожаловать в бота для заметок!\nИспользуй /start для начала работы"
+    )
+
 
 @dp.message_created(Command('start'))
-async def hello(event: MessageCreated):
-    builder = InlineKeyboardBuilder()
-
-    builder.row(
-        CallbackButton(
-            text='Кнопка 1',
-            payload='btn_1'
-        ),
-        CallbackButton(
-            text='Кнопка 2',
-            payload='btn_2',
-        )
-    )
-    builder.add(
-        ChatButton(
-            text='Создать чат',
-            chat_title='Тест чат'
-        )
-    )
-
+async def start_command(event: MessageCreated):
+    """Главное меню бота"""
+    menu = create_main_menu()
     await event.message.answer(
-        text='Привет!',
-        attachments=[
-            builder.as_markup(),
-        ]  # Для MAX клавиатура это вложение,
-    )  # поэтому она в attachments
+        text="🎯 Главное меню заметочника:",
+        attachments=[menu]
+    )
 
 
-@dp.bot_added()
-async def bot_added(event: BotAdded):
-    if not event.chat:
-        logging.info('Не удалось получить chat, возможно отключен auto_requests!')
+@dp.message_callback(F.callback.payload == 'new_note')
+async def new_note_callback(event: MessageCallback):
+    """Начало создания новой заметки"""
+    await event.answer(new_text="Введите заголовок заметки:")
+    # Здесь будет логика перехода в состояние WAITING_TITLE
+
+
+@dp.message_callback(F.callback.payload == 'list_notes')
+async def list_notes_callback(event: MessageCallback):
+    """Показать список заметок"""
+    user_id = event.from_user.id
+    notes = user_notes.get(user_id, [])
+
+    if not notes:
+        await event.answer(new_text="📭 У вас пока нет заметок")
         return
 
-    await bot.send_message(
-        chat_id=event.chat.id,
-        text=f'Привет чат {event.chat.title}!'
-    )
+    response = "📋 Ваши заметки:\n\n"
+    for i, note in enumerate(notes, 1):
+        response += f"{i}. {note['title']}\n"
 
-
-@dp.message_removed()
-async def message_removed(event: MessageRemoved):
-    await bot.send_message(
-        chat_id=event.chat_id,
-        text='Я всё видел!'
-    )
-
-
-@dp.bot_started()
-async def bot_started(event: BotStarted):
-    await bot.send_message(
-        chat_id=event.chat_id,
-        text='Привет! Отправь мне /start'
-    )
-
-
-@dp.chat_title_changed()
-async def chat_title_changed(event: ChatTitleChanged):
-    await bot.send_message(
-        chat_id=event.chat_id,
-        text=f'Крутое новое название "{event.title}"!'
-    )
-
-
-@dp.message_callback()
-async def message_callback(event: MessageCallback):
-    await event.answer(
-        new_text=f'Вы нажали на кнопку {event.callback.payload}!'
-    )
-
-
-@dp.message_edited()
-async def message_edited(event: MessageEdited):
-    await event.message.answer(
-        text='Вы отредактировали сообщение!'
-    )
-
-
-@dp.user_removed()
-async def user_removed(event: UserRemoved):
-    if not event.from_user:
-        return await bot.send_message(
-            chat_id=event.chat_id,
-            text=f'Неизвестный кикнул {event.user.first_name} 😢'
-        )
-
-    await bot.send_message(
-        chat_id=event.chat_id,
-        text=f'{event.from_user.first_name} кикнул {event.user.first_name} 😢'
-    )
-
-
-@dp.user_added()
-async def user_added(event: UserAdded):
-    if not event.chat:
-        return await bot.send_message(
-            chat_id=event.chat_id,
-            text=f'Чат приветствует вас, {event.user.first_name}!'
-        )
-
-    await bot.send_message(
-        chat_id=event.chat_id,
-        text=f'Чат "{event.chat.title}" приветствует вас, {event.user.first_name}!'
-    )
-
-
-@dp.bot_stopped()
-async def bot_stopped(event: BotStopped):
-    logging.info(event.from_user.full_name, 'остановил бота')  # type: ignore
-
-
-@dp.dialog_cleared()
-async def dialog_cleared(event: DialogCleared):
-    logging.info(event.from_user.full_name, 'очистил историю чата с ботом')  # type: ignore
-
-
-@dp.dialog_muted()
-async def dialog_muted(event: DialogMuted):
-    logging.info(event.from_user.full_name, 'отключил оповещения от чата бота до ',
-                 event.muted_until_datetime)  # type: ignore
-
-
-@dp.dialog_unmuted()
-async def dialog_unmuted(event: DialogUnmuted):
-    logging.info(event.from_user.full_name, 'включил оповещения от чата бота')  # type: ignore
-
-
-# @dp.dialog_unmuted()
-# async def dialog_removed(event: DialogUnmuted):
-#     logging.info(event.from_user.full_name, 'удалил диалог с ботом')  # type: ignore
-
-
-@dp.message_chat_created()
-async def message_chat_created(event: MessageChatCreated):
-    await bot.send_message(
-        chat_id=event.chat.chat_id,
-        text=f'Чат создан! Ссылка: {event.chat.link}'
-    )
+    await event.answer(new_text=response)
 
 
 async def main():
     await dp.start_polling(bot)
 
 
-if __name__ == '__main__':
-    asyncio.run(main())
+#if __name__ == '__main__':
+#    asyncio.run(main())
