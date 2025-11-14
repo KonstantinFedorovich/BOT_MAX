@@ -13,10 +13,11 @@ from maxapi.types import (
     BotStarted
 )
 from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
+from config import BOT_TOKEN
 
 logging.basicConfig(level=logging.INFO)
 
-bot = Bot('f9LHodD0cOIldjpxJWwsW9WZj9R7gYvK7Tt5042DZ7JBxEDrCmGmdzu4CaYjwR4pfyCfeMGT-K4R_eVr4WIK')
+bot = Bot(BOT_TOKEN)
 dp = Dispatcher()
 
 # Файл для хранения заметок

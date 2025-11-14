@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data files
+user_notes.json
+*.db
+*.sqlite3
+
+# Environment variables
+.env
+.env.local
+.env.prod
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
