@@ -61,26 +61,21 @@ python main.py
 
 Скопируйте полученный токен и вставьте в файл .env
 
-# 🐳 Docker команды
+## 🐳 Docker-образ
 
-**Сборка образа:**
+**Dockerfile находится в корне репозитория**
+
+### Сборка образа:
 
 docker build -t notes-bot .
 
-**Запуск контейнера:**
+## Готовый образ на Docker Hub:
 
-docker run -d --name notes-bot --env-file .env notes-bot
+docker pull konstantinmm/notes-bot:latest
 
-**Просмотр логов:**
+## Запуск:
 
-docker logs notes-bot
-
-**Остановка контейнера:**
-
-docker stop notes-bot
-**Удаление контейнера:**
-
-docker rm notes-bot
+docker run -d --name notes-bot --env-file .env konstantinmm/notes-bot
 
 # 📋 Функциональность
 
