@@ -115,3 +115,10 @@ docker rm notes-bot
 
 🗑 Удалить - удалить заметку
 
+# 📦 Зависимости
+
+- [maxapi](https://github.com/love-apples/maxapi) - MIT License
+- aiofiles - Apache 2.0 License  
+- aiohttp - Apache 2.0 License
+
+Все используемые библиотеки имеют открытые лицензии.
