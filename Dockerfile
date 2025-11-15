@@ -9,7 +9,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Копируем только нужные исходные файлы
-COPY main.py config.py ./
+COPY main.py config.py .env ./
 
 # Создаем папку для данных (если нужно)
 RUN mkdir -p /data
