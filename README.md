@@ -24,7 +24,7 @@ BOT_TOKEN=ваш_токен_бота_здесь #env
 
 docker build -t notes-bot .
 
-docker run -d --name notes-bot --env-file .env notes-bot
+docker run -d --name notes-bot --env-file .env konstantinmm/notes-bot:latest
 
 # Локальный запуск (для разработки)
 **Клонируйте репозиторий:**
