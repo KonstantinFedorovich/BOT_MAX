@@ -20,6 +20,7 @@ cp .env.example .env #bash
 **Отредактируйте файл .env и вставьте ваш токен:**
 
 BOT_TOKEN=ваш_токен_бота_здесь #env
+
 3. **Соберите и запустите контейнер:**
 
 docker build -t notes-bot .
